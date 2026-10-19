@@ -1,0 +1,170 @@
+<UserControl x:Class="Aether.Desktop.Views.PriorityView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="clr-namespace:Aether.Desktop.Views">
+    <Grid Margin="28,24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="440" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,12">
+            <TextBlock Text="Incident Priority" Style="{StaticResource PageTitle}" />
+            <TextBlock Style="{StaticResource Muted}"
+                       Text="A rule-based priority defined by the project team from recorded downtime, recorded actual loss and (where it exists) asset condition against source limits. It is not an AI result and does not identify a root cause." />
+            <Expander Header="How the priority is calculated" Margin="0,8,0,0" FontSize="13">
+                <TextBlock Margin="0,8,0,0" Text="Points: downtime 24 h or more = 3, 8 h to under 24 h = 2, above 0 h = 1, 0 h = 0. Actual loss k USD 1,000 or more = 3, 250 to under 1,000 = 2, above 0 = 1, 0 = 0. Condition (only when the asset has weekly records in the 28 days up to the incident date and source limits): trip limit reached = 2, alarm limit reached = 1, otherwise 0. Category: 6 or more = Critical, 4-5 = High, 2-3 = Medium, 0-1 = Low. A value that is not recorded is never counted as zero: that factor is marked Not available and the result is flagged. The source Pre-Risk class is displayed but is not used in the score. The thresholds are team choices, not values from the case data. Details: docs/DECISIONS.md D-07." />
+            </Expander>
+        </StackPanel>
+
+        <Grid Grid.Row="1" Grid.Column="0" Margin="0,0,16,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <WrapPanel Grid.Row="0" Margin="0,0,0,10">
+                <StackPanel Margin="0,0,12,6">
+                    <TextBlock Text="Search" FontWeight="SemiBold" Margin="0,0,0,3" />
+                    <TextBox Width="240" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                             AutomationProperties.Name="Search incidents by title, tag, plant or reference" />
+                </StackPanel>
+                <StackPanel Margin="0,0,12,6">
+                    <TextBlock Text="Calculated priority" FontWeight="SemiBold" Margin="0,0,0,3" />
+                    <ComboBox Width="160" ItemsSource="{Binding CategoryOptions}" SelectedItem="{Binding CategoryFilter}"
+                              AutomationProperties.Name="Filter by calculated priority" />
+                </StackPanel>
+                <CheckBox Content="Hide closed and canceled" IsChecked="{Binding ActiveOnly}" VerticalAlignment="Bottom" Margin="0,0,0,12" />
+            </WrapPanel>
+
+            <Grid Grid.Row="1">
+                <DataGrid ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected, Mode=TwoWay}"
+                          AutomationProperties.Name="Incidents ranked by calculated priority">
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="Priority (calculated)" Width="140" SortMemberPath="Result.Points">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource Badge}" Background="{Binding Category, Converter={StaticResource BadgeBrush}}">
+                                        <TextBlock Text="{Binding CategoryText}" Style="{StaticResource BadgeText}" />
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Points" Width="70" Binding="{Binding PointsText}" />
+                        <DataGridTextColumn Header="Date" Width="95" Binding="{Binding Incident.OccurredOn, StringFormat=yyyy-MM-dd, TargetNullValue=—}" />
+                        <DataGridTextColumn Header="Tag" Width="95" Binding="{Binding Incident.TagNumber}" ElementStyle="{StaticResource CellText}" />
+                        <DataGridTextColumn Header="Title" Width="*" MinWidth="160" Binding="{Binding Incident.Title}" ElementStyle="{StaticResource CellText}" />
+                        <DataGridTextColumn Header="Pre-Risk (source)" Width="115" Binding="{Binding Incident.PreRisk, TargetNullValue=—}" />
+                        <DataGridTextColumn Header="Data" Width="100" Binding="{Binding PartialText}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+                <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1"
+                        Padding="24" Margin="0,34,0,0" VerticalAlignment="Top"
+                        Visibility="{Binding IsListEmpty, Converter={StaticResource BoolToVisible}}">
+                    <TextBlock Text="{Binding EmptyMessage}" Style="{StaticResource Muted}" FontSize="14" />
+                </Border>
+            </Grid>
+        </Grid>
+
+        <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}">
+            <Grid>
+                <StackPanel Visibility="{Binding HasSelection, Converter={StaticResource BoolToCollapsed}}">
+                    <TextBlock Text="No incident selected" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Style="{StaticResource Muted}" Text="Select an incident to see its recorded facts and which factors produced its calculated priority." />
+                </StackPanel>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Visibility="{Binding HasSelection, Converter={StaticResource BoolToVisible}}">
+                    <StackPanel Margin="0,0,8,0">
+                        <TextBlock Text="{Binding Selected.Incident.Title}" Style="{StaticResource SectionTitle}" />
+
+                        <TextBlock Text="Calculated priority" Style="{StaticResource Muted}" />
+                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                            <Border Style="{StaticResource Badge}" Background="{Binding Selected.Category, Converter={StaticResource BadgeBrush}}" Padding="14,4">
+                                <TextBlock Text="{Binding Selected.CategoryText}" Style="{StaticResource BadgeText}" FontSize="15" />
+                            </Border>
+                            <TextBlock Text="{Binding Selected.PointsText}" VerticalAlignment="Center" Margin="12,0,0,0" FontSize="15" FontWeight="SemiBold" />
+                            <TextBlock Text="  points of the scored factors" VerticalAlignment="Center" Style="{StaticResource Muted}" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding Selected.PartialText}" Foreground="{StaticResource NoticeTextBrush}" FontWeight="SemiBold" Margin="0,6,0,0"
+                                   Visibility="{Binding Selected.PartialText, Converter={StaticResource TextToVisible}}" />
+
+                        <TextBlock Text="Source classification (recorded, not calculated)" Style="{StaticResource FieldLabel}" Margin="0,16,0,3" />
+                        <TextBlock Text="{Binding SourceRiskText}" />
+
+                        <TextBlock Text="Recorded facts used" Style="{StaticResource FieldLabel}" Margin="0,16,0,6" />
+                        <ItemsControl ItemsSource="{Binding Facts}" Grid.IsSharedSizeScope="True" IsTabStop="False">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,0,0,3">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" SharedSizeGroup="L" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding Label}" Style="{StaticResource Muted}" Margin="0,0,12,0" />
+                                        <TextBlock Grid.Column="1" Text="{Binding Value}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock Text="Factors that affect the result" Style="{StaticResource FieldLabel}" Margin="0,16,0,6" />
+                        <ItemsControl ItemsSource="{Binding Factors}" IsTabStop="False">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,0,1" Padding="0,6">
+                                        <StackPanel>
+                                            <DockPanel>
+                                                <TextBlock DockPanel.Dock="Right" FontWeight="SemiBold">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                                            <Setter Property="Text">
+                                                                <Setter.Value>
+                                                                    <MultiBinding StringFormat="{}{0} / {1}">
+                                                                        <Binding Path="Points" />
+                                                                        <Binding Path="MaxPoints" />
+                                                                    </MultiBinding>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding State}" Value="NotAvailable">
+                                                                    <Setter Property="Text" Value="Not scored" />
+                                                                    <Setter Property="Foreground" Value="{StaticResource NoticeTextBrush}" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                            </DockPanel>
+                                            <TextBlock Text="{Binding Basis}" Style="{StaticResource Muted}" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock Text="Notes" Style="{StaticResource FieldLabel}" Margin="0,16,0,6" />
+                        <ItemsControl ItemsSource="{Binding Notes}" IsTabStop="False">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" Margin="0,0,0,4" Style="{StaticResource Muted}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="{Binding ConditionNote}" Style="{StaticResource Muted}"
+                                   Visibility="{Binding ConditionNote, Converter={StaticResource TextToVisible}}" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
+        <StackPanel Grid.Row="2" Grid.ColumnSpan="2">
+            <TextBlock Text="{Binding CountText}" Style="{StaticResource Muted}" FontSize="12" Margin="0,8,0,0" />
+            <views:StatusMessage />
+        </StackPanel>
+    </Grid>
+</UserControl>

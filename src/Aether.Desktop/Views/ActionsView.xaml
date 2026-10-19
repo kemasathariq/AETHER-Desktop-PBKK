@@ -1,0 +1,132 @@
+<UserControl x:Class="Aether.Desktop.Views.ActionsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="clr-namespace:Aether.Desktop.Views">
+    <Grid Margin="28,24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="400" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,12">
+            <TextBlock Text="Action Tracker" Style="{StaticResource PageTitle}" />
+            <TextBlock Style="{StaticResource Muted}"
+                       Text="Follow-up actions linked to incidents. Status is Open, In Progress or Closed and is set by a person; nothing here is verified automatically." />
+        </StackPanel>
+
+        <Grid Grid.Row="1" Grid.Column="0" Margin="0,0,16,0" IsEnabled="{Binding IsNotEditing}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <WrapPanel Grid.Row="0" Margin="0,0,0,10">
+                <StackPanel Margin="0,0,12,6">
+                    <TextBlock Text="Search" FontWeight="SemiBold" Margin="0,0,0,3" />
+                    <TextBox Width="280" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                             AutomationProperties.Name="Search actions by description, owner, incident title or tag" />
+                </StackPanel>
+                <StackPanel Margin="0,0,12,6">
+                    <TextBlock Text="Status" FontWeight="SemiBold" Margin="0,0,0,3" />
+                    <ComboBox Width="160" ItemsSource="{Binding FilterStatuses}" SelectedItem="{Binding StatusFilter}" AutomationProperties.Name="Filter by status" />
+                </StackPanel>
+                <StackPanel Margin="0,0,0,6" VerticalAlignment="Bottom">
+                    <Button Content="Clear filters" Command="{Binding ClearFiltersCommand}" Margin="0" />
+                </StackPanel>
+            </WrapPanel>
+            <Grid Grid.Row="1">
+                <DataGrid ItemsSource="{Binding Items}" SelectedItem="{Binding Selected, Mode=TwoWay}" AutomationProperties.Name="Action table">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Action" Width="*" MinWidth="200" Binding="{Binding Description}" ElementStyle="{StaticResource CellText}" />
+                        <DataGridTextColumn Header="Incident tag" Width="100" Binding="{Binding IncidentTag}" />
+                        <DataGridTextColumn Header="Owner" Width="90" Binding="{Binding Owner}" />
+                        <DataGridTextColumn Header="Target date" Width="100" Binding="{Binding TargetDate, StringFormat=yyyy-MM-dd, TargetNullValue=—}" />
+                        <DataGridTextColumn Header="Status" Width="100" Binding="{Binding Status}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+                <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1"
+                        Padding="24" Margin="0,34,0,0" VerticalAlignment="Top"
+                        Visibility="{Binding IsListEmpty, Converter={StaticResource BoolToVisible}}">
+                    <TextBlock Text="{Binding EmptyMessage}" Style="{StaticResource Muted}" FontSize="14" />
+                </Border>
+            </Grid>
+        </Grid>
+
+        <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}">
+            <Grid>
+                <DockPanel Visibility="{Binding ShowDetails, Converter={StaticResource BoolToVisible}}">
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,12,0,0">
+                        <Button Content="New action" Command="{Binding NewCommand}" Style="{StaticResource PrimaryButton}" />
+                        <Button Content="Edit" Command="{Binding EditCommand}" />
+                        <Button Content="Delete" Command="{Binding DeleteCommand}" Style="{StaticResource DangerButton}" />
+                    </StackPanel>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <TextBlock Text="Action details" Style="{StaticResource SectionTitle}" />
+                            <ItemsControl ItemsSource="{Binding Details}" Grid.IsSharedSizeScope="True" IsTabStop="False">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" SharedSizeGroup="L" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding Label}" Style="{StaticResource Muted}" Margin="0,0,12,0" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Value}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+
+                <StackPanel Visibility="{Binding ShowNoSelection, Converter={StaticResource BoolToVisible}}">
+                    <TextBlock Text="No action selected" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Style="{StaticResource Muted}" Text="Select a row to see its details, or add a new action for an incident." Margin="0,0,0,12" />
+                    <Button Content="New action" Command="{Binding NewCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" />
+                </StackPanel>
+
+                <DockPanel Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisible}}">
+                    <StackPanel DockPanel.Dock="Top">
+                        <TextBlock Text="{Binding FormTitle}" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Text="Fields marked * are required." Style="{StaticResource Muted}" FontSize="12" />
+                    </StackPanel>
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,12,0,0">
+                        <Button Content="Save" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButton}" />
+                        <Button Content="Cancel" Command="{Binding CancelCommand}" />
+                    </StackPanel>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="0,0,8,0">
+                            <TextBlock Text="Related incident *" Style="{StaticResource FieldLabel}" />
+                            <ComboBox ItemsSource="{Binding IncidentOptions}" DisplayMemberPath="Display" SelectedValuePath="Id"
+                                      SelectedValue="{Binding Form.IncidentId}" AutomationProperties.Name="Related incident" />
+                            <TextBlock Text="{Binding Errors[IncidentId]}" Style="{StaticResource FieldError}" />
+                            <TextBlock Text="Description *" Style="{StaticResource FieldLabel}" />
+                            <TextBox Text="{Binding Form.Description, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Description" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="64" VerticalContentAlignment="Top" />
+                            <TextBlock Text="{Binding Errors[Description]}" Style="{StaticResource FieldError}" />
+                            <TextBlock Text="Owner *" Style="{StaticResource FieldLabel}" />
+                            <TextBox Text="{Binding Form.Owner, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Owner" />
+                            <TextBlock Text="{Binding Errors[Owner]}" Style="{StaticResource FieldError}" />
+                            <TextBlock Text="Target date *" Style="{StaticResource FieldLabel}" />
+                            <DatePicker SelectedDate="{Binding Form.TargetDate}" AutomationProperties.Name="Target date" />
+                            <TextBlock Text="{Binding Errors[TargetDate]}" Style="{StaticResource FieldError}" />
+                            <TextBlock Text="Status *" Style="{StaticResource FieldLabel}" />
+                            <ComboBox ItemsSource="{Binding FormStatuses}" SelectedItem="{Binding Form.Status}" AutomationProperties.Name="Status" />
+                            <TextBlock Text="{Binding Errors[Status]}" Style="{StaticResource FieldError}" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+            </Grid>
+        </Border>
+
+        <StackPanel Grid.Row="2" Grid.ColumnSpan="2">
+            <TextBlock Text="{Binding CountText}" Style="{StaticResource Muted}" FontSize="12" Margin="0,8,0,0" />
+            <views:StatusMessage />
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -1,0 +1,108 @@
+<UserControl x:Class="Aether.Desktop.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="clr-namespace:Aether.Desktop.Views"
+             xmlns:ctl="clr-namespace:Aether.Desktop.Controls">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,24">
+        <StackPanel>
+            <TextBlock Text="Dashboard" Style="{StaticResource PageTitle}" />
+            <TextBlock Style="{StaticResource Muted}" Margin="0,0,0,14"
+                       Text="Summary of the incidents stored in the local database. The figures are recorded historical values (plus anything you add), calculated when this page opens. They are not savings or benefits produced by this application." />
+
+            <TextBlock Text="Loading statistics…" Style="{StaticResource Muted}" FontSize="15" Margin="0,10"
+                       Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisible}}" />
+
+            <Border Style="{StaticResource Card}" Visibility="{Binding ShowEmptyMessage, Converter={StaticResource BoolToVisible}}">
+                <StackPanel>
+                    <TextBlock Text="No incident data yet" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Text="The database has no incidents, so all statistics are zero. Add an incident on the Incidents page and this page will update." />
+                </StackPanel>
+            </Border>
+
+            <StackPanel Visibility="{Binding ShowContent, Converter={StaticResource BoolToVisible}}">
+                <UniformGrid Columns="4">
+                    <Border Style="{StaticResource Card}" Margin="0,0,12,0">
+                        <StackPanel>
+                            <TextBlock Text="Total incidents" Style="{StaticResource Muted}" />
+                            <TextBlock Text="{Binding TotalIncidentsText}" Style="{StaticResource BigNumber}" />
+                            <TextBlock Text="{Binding ActiveIncidentsText}" Style="{StaticResource Muted}" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Card}" Margin="0,0,12,0">
+                        <StackPanel>
+                            <TextBlock Text="Recorded downtime" Style="{StaticResource Muted}" />
+                            <TextBlock Text="{Binding DowntimeText}" Style="{StaticResource BigNumber}" />
+                            <TextBlock Text="{Binding DowntimeNote}" Style="{StaticResource Muted}" FontSize="12" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Card}" Margin="0,0,12,0">
+                        <StackPanel>
+                            <TextBlock Text="Recorded actual loss" Style="{StaticResource Muted}" />
+                            <TextBlock Text="{Binding ActualLossText}" Style="{StaticResource BigNumber}" FontSize="24" />
+                            <TextBlock Text="{Binding LossNote}" Style="{StaticResource Muted}" FontSize="12" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="Actions tracked" Style="{StaticResource Muted}" />
+                            <TextBlock Text="{Binding ActionsText}" Style="{StaticResource BigNumber}" />
+                            <TextBlock Text="{Binding ActionsNote}" Style="{StaticResource Muted}" FontSize="12" />
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+
+                <Grid Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,6,12">
+                        <StackPanel>
+                            <TextBlock Text="Incidents by status" Style="{StaticResource SectionTitle}" />
+                            <ctl:BarChart Items="{Binding ByStatus}" LabelWidth="160" BarBrush="{StaticResource AccentBrush}"
+                                          AutomationProperties.Name="Bar chart: incidents by status" />
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource Card}" Margin="6,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="Incidents by plant (top 8)" Style="{StaticResource SectionTitle}" />
+                            <ctl:BarChart Items="{Binding ByPlant}" LabelWidth="60" BarBrush="{StaticResource HighBrush}"
+                                          AutomationProperties.Name="Bar chart: incidents by plant" />
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="Incidents per month (latest 12 months with data)" Style="{StaticResource SectionTitle}" />
+                            <ctl:ColumnChart Items="{Binding ByMonth}" Height="200" BarBrush="{StaticResource AccentBrush}"
+                                             AutomationProperties.Name="Column chart: incidents per month" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <Border Style="{StaticResource Card}" Margin="0,12,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Most recent incidents" Style="{StaticResource SectionTitle}" />
+                        <DataGrid ItemsSource="{Binding Recent}" AutomationProperties.Name="Most recent incidents"
+                                  MaxHeight="300">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Date" Width="100" Binding="{Binding OccurredOn, StringFormat=yyyy-MM-dd, TargetNullValue=—}" />
+                                <DataGridTextColumn Header="Tag" Width="100" Binding="{Binding TagNumber}" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Title" Width="*" Binding="{Binding Title}" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Plant" Width="70" Binding="{Binding Plant}" />
+                                <DataGridTextColumn Header="Status" Width="170" Binding="{Binding Status}" />
+                                <DataGridTextColumn Header="Downtime (h)" Width="110" Binding="{Binding DowntimeHours, StringFormat=N1, TargetNullValue=—}" ElementStyle="{StaticResource CellNumber}" />
+                                <DataGridTextColumn Header="Actual loss (k USD)" Width="140" Binding="{Binding ActualLossKUsd, StringFormat=N0, TargetNullValue=—}" ElementStyle="{StaticResource CellNumber}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <views:StatusMessage />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
