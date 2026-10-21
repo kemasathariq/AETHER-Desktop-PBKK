@@ -43,6 +43,13 @@ public sealed class BadgeBrushConverter : IValueConverter
             PriorityCategory.Medium => "MediumBrush",
             PriorityCategory.Low => "LowBrush",
             PriorityCategory.NotRated => "NeutralBrush",
+            ActionStatus.Open or IncidentStatuses.NewRegistered => "OpenBadgeBrush",
+            ActionStatus.InProgress or IncidentStatuses.RcaProcess => "MediumBrush",
+            IncidentStatuses.CaPaExecution => "HighBrush",
+            IncidentStatuses.MonitoringResult => "MonitoringBadgeBrush",
+            ActionStatus.Closed or IncidentStatuses.RiskClosed or "NORMAL" => "LowBrush",
+            "TRIP" => "CriticalBrush",
+            "ALARM" => "HighBrush",
             _ => "NeutralBrush",
         };
         return Application.Current.TryFindResource(key) as Brush ?? Brushes.Gray;

@@ -24,11 +24,15 @@ public class LineChart : FrameworkElement
     public static readonly DependencyProperty UnitProperty = DependencyProperty.Register(
         nameof(Unit), typeof(string), typeof(LineChart),
         new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.AffectsRender));
+    public static readonly DependencyProperty AreaBrushProperty = DependencyProperty.Register(
+        nameof(AreaBrush), typeof(Brush), typeof(LineChart),
+        new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
 
     public IEnumerable<ChartPoint>? Points { get => (IEnumerable<ChartPoint>?)GetValue(PointsProperty); set => SetValue(PointsProperty, value); }
     public double? AlarmLimit { get => (double?)GetValue(AlarmLimitProperty); set => SetValue(AlarmLimitProperty, value); }
     public double? TripLimit { get => (double?)GetValue(TripLimitProperty); set => SetValue(TripLimitProperty, value); }
     public string Unit { get => (string)GetValue(UnitProperty); set => SetValue(UnitProperty, value); }
+    public Brush? AreaBrush { get => (Brush?)GetValue(AreaBrushProperty); set => SetValue(AreaBrushProperty, value); }
 
     protected override Size MeasureOverride(Size availableSize) =>
         new(double.IsInfinity(availableSize.Width) ? 500 : availableSize.Width,
@@ -37,14 +41,14 @@ public class LineChart : FrameworkElement
     protected override void OnRender(DrawingContext dc)
     {
         var pts = Points?.OrderBy(p => p.X).ToList() ?? new List<ChartPoint>();
-        if (pts.Count < 2 || ActualWidth < 120 || ActualHeight < 80) return;
+        if (pts.Count == 0 || ActualWidth < 120 || ActualHeight < 80) return;
 
         var dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip;
         Brush Res(string key, Brush fallback) => (Brush)(Application.Current.TryFindResource(key) ?? fallback);
         var muted = Res("MutedBrush", Brushes.Gray);
-        var accent = Res("AccentBrush", Brushes.Teal);
-        var high = Res("HighBrush", Brushes.OrangeRed);
-        var critical = Res("CriticalBrush", Brushes.Red);
+        var accent = Res(AreaBrush is null ? "AccentBrush" : "VioletBrush", Brushes.Teal);
+        var high = Res("AmberBrush", Brushes.OrangeRed);
+        var critical = Res("DangerBrush", Brushes.Red);
         var gridPen = new Pen(Res("BorderBrushSoft", Brushes.LightGray), 1);
 
         const double left = 56, right = 14, top = 12, bottom = 30;
@@ -58,7 +62,8 @@ public class LineChart : FrameworkElement
         var max = values.Max();
         if (max - min < 1e-9) { max += 1; min -= 1; }
         var pad = (max - min) * 0.08;
-        min -= pad; max += pad;
+        if (AreaBrush is null) { min -= pad; max += pad; }
+        else { min = 0; max = Math.Max(5, Math.Ceiling(max / 5) * 5); }
 
         var t0 = pts[0].X;
         var span = (pts[^1].X - t0).TotalDays;
@@ -80,6 +85,18 @@ public class LineChart : FrameworkElement
         DrawLimit(dc, AlarmLimit, "Alarm", high, left, plotW, Y, dpi);
         DrawLimit(dc, TripLimit, "Trip", critical, left, plotW, Y, dpi);
 
+        if (AreaBrush is not null)
+        {
+            var area = new StreamGeometry();
+            using (var ctx = area.Open())
+            {
+                ctx.BeginFigure(new Point(X(pts[0].X), top + plotH), true, true);
+                foreach (var p in pts) ctx.LineTo(new Point(X(p.X), Y(p.Y)), true, false);
+                ctx.LineTo(new Point(X(pts[^1].X), top + plotH), true, false);
+            }
+            dc.DrawGeometry(AreaBrush, null, area);
+        }
+
         var geometry = new StreamGeometry();
         using (var ctx = geometry.Open())
         {
@@ -88,7 +105,20 @@ public class LineChart : FrameworkElement
         }
         geometry.Freeze();
         dc.DrawGeometry(null, new Pen(accent, 2), geometry);
-        foreach (var p in pts) dc.DrawEllipse(accent, null, new Point(X(p.X), Y(p.Y)), 3, 3);
+        foreach (var p in pts)
+            dc.DrawEllipse(AreaBrush is null ? accent : Brushes.White,
+                AreaBrush is null ? null : new Pen(Brushes.DimGray, 2), new Point(X(p.X), Y(p.Y)), 3, 3);
+
+        if (AreaBrush is not null)
+        {
+            var every = Math.Max(1, (int)Math.Ceiling(pts.Count * 62 / plotW));
+            for (var i = 0; i < pts.Count; i += every)
+            {
+                var label = Format(pts[i].X.ToString("MMM yy", CultureInfo.CurrentCulture), muted, dpi, 11);
+                dc.DrawText(label, new Point(Math.Clamp(X(pts[i].X) - label.Width / 2, left, left + plotW - label.Width), top + plotH + 8));
+            }
+            return;
+        }
 
         var first = Format(pts[0].X.ToString("d MMM yyyy", CultureInfo.CurrentCulture), muted, dpi, 11);
         var last = Format(pts[^1].X.ToString("d MMM yyyy", CultureInfo.CurrentCulture), muted, dpi, 11);

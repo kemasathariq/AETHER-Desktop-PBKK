@@ -45,7 +45,7 @@
                         <DataGridTextColumn Header="Incident tag" Width="100" MinWidth="100" Binding="{Binding IncidentTag}" />
                         <DataGridTextColumn Header="Owner" Width="90" MinWidth="90" Binding="{Binding Owner}" />
                         <DataGridTextColumn Header="Target date" Width="100" MinWidth="100" Binding="{Binding TargetDate, StringFormat=yyyy-MM-dd, TargetNullValue=—}" />
-                        <DataGridTextColumn Header="Status" Width="100" MinWidth="100" Binding="{Binding Status}" />
+                        <DataGridTemplateColumn Header="Status" Width="100" MinWidth="100" SortMemberPath="Status" ClipboardContentBinding="{Binding Status}"><DataGridTemplateColumn.CellTemplate><DataTemplate><Border Style="{StaticResource Badge}" Background="{Binding Status, Converter={StaticResource BadgeBrush}}"><TextBlock Text="{Binding Status}" Style="{StaticResource BadgeText}" FontSize="10" /></Border></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                     </DataGrid.Columns>
                 </DataGrid>
                 <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1"

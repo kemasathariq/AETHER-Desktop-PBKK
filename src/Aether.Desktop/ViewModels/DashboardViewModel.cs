@@ -3,6 +3,7 @@ using System.Globalization;
 using Aether.Core;
 using Aether.Core.Models;
 using Aether.Desktop.Common;
+using Aether.Desktop.Controls;
 
 namespace Aether.Desktop.ViewModels;
 
@@ -33,6 +34,8 @@ public sealed class DashboardViewModel : PageViewModel
     public IReadOnlyList<LabelCount> ByStatus { get; private set; } = Array.Empty<LabelCount>();
     public IReadOnlyList<LabelCount> ByPlant { get; private set; } = Array.Empty<LabelCount>();
     public IReadOnlyList<LabelCount> ByMonth { get; private set; } = Array.Empty<LabelCount>();
+    public IReadOnlyList<ChartPoint> MonthlyTrend => ByMonth
+        .Select(m => new ChartPoint(DateTime.ParseExact(m.Label, "yyyy-MM", CultureInfo.InvariantCulture), m.Count)).ToList();
     public ObservableCollection<Incident> Recent { get; } = new();
 
     public override async void Refresh()
@@ -91,7 +94,7 @@ public sealed class DashboardViewModel : PageViewModel
         {
             nameof(IsEmpty), nameof(ShowContent), nameof(TotalIncidentsText), nameof(ActiveIncidentsText),
             nameof(DowntimeText), nameof(DowntimeNote), nameof(ActualLossText), nameof(LossNote),
-            nameof(ActionsText), nameof(ActionsNote), nameof(ByStatus), nameof(ByPlant), nameof(ByMonth),
+            nameof(ActionsText), nameof(ActionsNote), nameof(ByStatus), nameof(ByPlant), nameof(ByMonth), nameof(MonthlyTrend),
         })
             OnPropertyChanged(name);
     }

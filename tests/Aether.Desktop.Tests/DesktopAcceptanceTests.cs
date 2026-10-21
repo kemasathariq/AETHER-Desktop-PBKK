@@ -9,6 +9,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Aether.Core.Models;
 using Aether.Desktop.Common;
+using Aether.Desktop.Controls;
 using Aether.Desktop.ViewModels;
 using Aether.Desktop.Views;
 using Aether.Infrastructure.Data;
@@ -67,6 +68,21 @@ public class DesktopAcceptanceTests
         CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
         var app = new App();
         app.InitializeComponent();
+        var badge = new BadgeBrushConverter();
+        Assert.Same(app.FindResource("LowBrush"), badge.Convert(ActionStatus.Closed, typeof(Brush), null!, CultureInfo.InvariantCulture));
+        Assert.Same(app.FindResource("MediumBrush"), badge.Convert(ActionStatus.InProgress, typeof(Brush), null!, CultureInfo.InvariantCulture));
+        Assert.NotSame(app.FindResource("NeutralBrush"), badge.Convert(ActionStatus.Open, typeof(Brush), null!, CultureInfo.InvariantCulture));
+        var singleMonth = new LineChart
+        {
+            Points = new[] { new ChartPoint(new DateTime(2026, 10, 1), 1) },
+            AreaBrush = (Brush)app.FindResource("ChartAreaBrush"),
+        };
+        Layout(singleMonth, 300, 180);
+        new RenderTargetBitmap(300, 180, 96, 96, PixelFormats.Pbgra32).Render(singleMonth);
+        var singleMonthDrawing = VisualTreeHelper.GetDrawing(singleMonth);
+        Assert.NotNull(singleMonthDrawing);
+        Assert.Contains(singleMonthDrawing.Children.OfType<GeometryDrawing>(),
+            drawing => drawing.Geometry is EllipseGeometry);
         using var db = new TestDb();
         var services = Services(db.Db);
         var errors = new StringWriter();
@@ -81,6 +97,8 @@ public class DesktopAcceptanceTests
             ((Grid)root).Background = window.Background;
             PumpUntil(() => !((DashboardViewModel)main.CurrentPage).IsLoading);
             Assert.Equal("380", ((DashboardViewModel)main.CurrentPage).TotalIncidentsText);
+            var trend = ((DashboardViewModel)main.CurrentPage).MonthlyTrend;
+            Assert.Equal(((DashboardViewModel)main.CurrentPage).ByMonth.Select(m => (double)m.Count), trend.Select(p => p.Y));
 
             foreach (var nav in main.Items)
             {
@@ -91,9 +109,14 @@ public class DesktopAcceptanceTests
                 Layout(root, 1100, 680);
                 Snapshot(root, nav.Title.Replace(" ", "") + "-minimum");
                 foreach (var table in Find<DataGrid>(root))
+                {
                     foreach (var column in table.Columns.Where(c => c.Width.IsAbsolute))
                         Assert.True(column.ActualWidth >= column.Width.Value - 1,
                             $"{nav.Title}: {column.Header} shrank from {column.Width.Value} to {column.ActualWidth}.");
+                    foreach (var status in table.Columns.Where(c => c.SortMemberPath == "Status"))
+                        Assert.False(string.IsNullOrEmpty(status.OnCopyingCellClipboardContent(table.Items[0]) as string),
+                            "Copying a row must include its status.");
+                }
             }
 
             var incidents = (IncidentsViewModel)main.Items[1].Page;

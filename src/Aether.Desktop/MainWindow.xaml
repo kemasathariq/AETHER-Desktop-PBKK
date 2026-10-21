@@ -5,7 +5,8 @@
         xmlns:views="clr-namespace:Aether.Desktop.Views"
         Title="AETHER Desktop" Width="1360" Height="820" MinWidth="1100" MinHeight="680"
         WindowStartupLocation="CenterScreen" Background="{StaticResource PageBrush}"
-        Foreground="{StaticResource TextBrush}" FontFamily="Segoe UI" FontSize="13">
+        Foreground="{StaticResource TextBrush}" FontFamily="Segoe UI" FontSize="13"
+        UseLayoutRounding="True" SnapsToDevicePixels="True">
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:DashboardViewModel}"><views:DashboardView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:IncidentsViewModel}"><views:IncidentsView /></DataTemplate>
@@ -22,24 +23,40 @@
 
         <Border Grid.Column="0" Background="{StaticResource SidebarBrush}">
             <DockPanel LastChildFill="True">
-                <StackPanel DockPanel.Dock="Top" Margin="20,24,20,18">
-                    <TextBlock Text="AETHER" FontSize="22" FontWeight="Bold" Foreground="White" />
-                    <TextBlock Text="Desktop · incident review" Foreground="#9CA3AF" FontSize="12" />
+                <StackPanel DockPanel.Dock="Top" Margin="20,20,16,16">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <Border Width="32" Height="32" CornerRadius="10" Margin="0,0,8,0" Background="#E0EEFF">
+                            <TextBlock Text="A" Foreground="{StaticResource AccentBrush}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="AETHER" FontSize="18" FontWeight="SemiBold" Foreground="#4B4B74" />
+                            <TextBlock Text="OPERATIONS DESKTOP" Foreground="{StaticResource MutedBrush}" FontSize="9" />
+                        </StackPanel>
+                    </StackPanel>
                 </StackPanel>
 
-                <TextBlock DockPanel.Dock="Bottom" Margin="20,12,20,18" FontSize="11" Foreground="#9CA3AF"
-                           Text="{Binding DataNote}" />
+                <Border DockPanel.Dock="Bottom" Margin="14,12,14,18" Padding="12" Background="{StaticResource SurfaceBrush}" CornerRadius="10" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <Ellipse Width="7" Height="7" Fill="{StaticResource GreenBrush}" Margin="0,0,7,0" />
+                            <TextBlock Text="LOCAL WORKSPACE" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource GreenBrush}" />
+                        </StackPanel>
+                        <TextBlock FontSize="10" Foreground="{StaticResource MutedBrush}" Text="{Binding DataNote}" />
+                    </StackPanel>
+                </Border>
 
                 <ListBox ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}"
-                         Background="Transparent" BorderThickness="0" Margin="8,0"
+                         Background="Transparent" BorderThickness="0" Margin="12,0"
                          ItemContainerStyle="{StaticResource NavItem}"
                          AutomationProperties.Name="Main navigation">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding Glyph}" FontFamily="Segoe MDL2 Assets" FontSize="16"
-                                           Foreground="#E5E7EB" Width="28" VerticalAlignment="Center" />
-                                <TextBlock Text="{Binding Title}" FontSize="14" Foreground="#E5E7EB"
+                                <Border Background="White" CornerRadius="6" Width="26" Height="26" Margin="0,0,10,0">
+                                    <TextBlock Text="{Binding Glyph}" FontFamily="Segoe MDL2 Assets" FontSize="14"
+                                               Foreground="{StaticResource TextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Text="{Binding Title}" FontSize="13" Foreground="{StaticResource TextBrush}"
                                            VerticalAlignment="Center" TextWrapping="NoWrap" />
                             </StackPanel>
                         </DataTemplate>
@@ -48,6 +65,24 @@
             </DockPanel>
         </Border>
 
-        <ContentControl Grid.Column="1" Content="{Binding CurrentPage}" Margin="0" IsTabStop="False" />
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions><RowDefinition Height="62" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+            <Border Background="{StaticResource PageBrush}" Padding="24,0">
+                <DockPanel>
+                    <Border DockPanel.Dock="Right" VerticalAlignment="Center" Background="#EEEEEE" CornerRadius="8" Padding="12,6">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="6" Height="6" Fill="{StaticResource GreenBrush}" Margin="0,0,7,0" />
+                            <TextBlock Text="SQLite · Local" Foreground="{StaticResource MutedBrush}" FontSize="11" />
+                        </StackPanel>
+                    </Border>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Workspace" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,0,16,0" />
+                        <TextBlock Text="/" Foreground="#999999" Margin="0,0,16,0" />
+                        <TextBlock Text="{Binding CurrentPage.Title}" FontSize="12" />
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+            <ContentControl Grid.Row="1" Content="{Binding CurrentPage}" Margin="0" IsTabStop="False" />
+        </Grid>
     </Grid>
 </Window>
