@@ -35,9 +35,9 @@
             <DataGrid ItemsSource="{Binding Assets}" SelectedItem="{Binding SelectedAsset, Mode=TwoWay}"
                       AutomationProperties.Name="Assets with condition measurements">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Tag" Width="95" Binding="{Binding Tag}" />
+                    <DataGridTextColumn Header="Tag" Width="95" MinWidth="95" Binding="{Binding Tag}" />
                     <DataGridTextColumn Header="Name" Width="*" Binding="{Binding Name}" ElementStyle="{StaticResource CellText}" />
-                    <DataGridTextColumn Header="Records" Width="70" Binding="{Binding RecordCount}" ElementStyle="{StaticResource CellNumber}" />
+                    <DataGridTextColumn Header="Records" Width="70" MinWidth="70" Binding="{Binding RecordCount}" ElementStyle="{StaticResource CellNumber}" />
                 </DataGrid.Columns>
             </DataGrid>
         </DockPanel>
@@ -88,13 +88,13 @@
                         <TextBlock Text="Recorded measurements (selected parameter, newest first)" Style="{StaticResource SectionTitle}" />
                         <DataGrid ItemsSource="{Binding Records}" MaxHeight="320" AutomationProperties.Name="Recorded measurements">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Date" Width="100" Binding="{Binding MeasuredOn, StringFormat=yyyy-MM-dd}" />
-                                <DataGridTextColumn Header="Week" Width="60" Binding="{Binding WeekNo}" ElementStyle="{StaticResource CellNumber}" />
-                                <DataGridTextColumn Header="Value" Width="90" Binding="{Binding Value, StringFormat=N2}" ElementStyle="{StaticResource CellNumber}" />
-                                <DataGridTextColumn Header="Unit" Width="70" Binding="{Binding Unit, TargetNullValue=—}" />
-                                <DataGridTextColumn Header="Alarm limit" Width="95" Binding="{Binding AlarmLimit, StringFormat=N2, TargetNullValue=—}" ElementStyle="{StaticResource CellNumber}" />
-                                <DataGridTextColumn Header="Trip limit" Width="85" Binding="{Binding TripLimit, StringFormat=N2, TargetNullValue=—}" ElementStyle="{StaticResource CellNumber}" />
-                                <DataGridTextColumn Header="Health status" Width="105" Binding="{Binding HealthStatus, TargetNullValue=—}" />
+                                <DataGridTextColumn Header="Date" Width="100" MinWidth="100" Binding="{Binding MeasuredOn, StringFormat=yyyy-MM-dd}" />
+                                <DataGridTextColumn Header="Week" Width="60" MinWidth="60" Binding="{Binding WeekNo}" ElementStyle="{StaticResource CellNumber}" />
+                                <DataGridTextColumn Header="Value" Width="90" MinWidth="90" Binding="{Binding Value, StringFormat=N2}" ElementStyle="{StaticResource CellNumber}" />
+                                <DataGridTextColumn Header="Unit" Width="70" MinWidth="70" Binding="{Binding Unit, TargetNullValue=—}" />
+                                <DataGridTextColumn Header="Alarm limit" Width="95" MinWidth="95" Binding="{Binding AlarmLimit, StringFormat=N2, TargetNullValue=—}" ElementStyle="{StaticResource CellNumber}" />
+                                <DataGridTextColumn Header="Trip limit" Width="85" MinWidth="85" Binding="{Binding TripLimit, StringFormat=N2, TargetNullValue=—}" ElementStyle="{StaticResource CellNumber}" />
+                                <DataGridTextColumn Header="Health status" Width="105" MinWidth="105" Binding="{Binding HealthStatus, TargetNullValue=—}" />
                                 <DataGridTextColumn Header="Remark" Width="*" Binding="{Binding Remark, TargetNullValue=—}" ElementStyle="{StaticResource CellText}" />
                             </DataGrid.Columns>
                         </DataGrid>

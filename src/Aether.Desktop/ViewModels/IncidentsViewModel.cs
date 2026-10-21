@@ -61,6 +61,7 @@ public sealed class IncidentsViewModel : PageViewModel
             if (!Set(ref _selected, value)) return;
             OnPropertyChanged(nameof(HasSelection));
             OnPropertyChanged(nameof(ShowDetails));
+            OnPropertyChanged(nameof(ShowNoSelection));
             BuildDetails();
         }
     }
@@ -232,7 +233,7 @@ public sealed class IncidentsViewModel : PageViewModel
         Errors.Clear();
         Form = null;
         Refresh();
-        Selected = Items.FirstOrDefault(i => i.Id == savedId) ?? Selected;
+        Selected = Items.FirstOrDefault(i => i.Id == savedId);
         var what = isNew ? "Incident added" : "Incident changes saved";
         ShowSuccess(Selected is null ? what + ", but it is hidden by the current filters." : what + ".");
     }

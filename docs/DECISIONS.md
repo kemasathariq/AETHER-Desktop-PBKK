@@ -50,6 +50,7 @@ Category from the total: >= 6 Critical, 4-5 High, 2-3 Medium, 0-1 Low.
 - **Source Pre-Risk** is displayed as "source classification" and is **not** an input, in line with PRD section 13 (Pre-Risk must not be the only
   measure of consequence). Using it as a minor input was rejected to keep the explanation simple.
 - **Condition check:** limit direction `high` breaches when value >= limit, `low` when value <= limit (limits and directions come from the source).
+- Measurements without a named parameter or unit cannot be compared and are excluded from the condition score, as required by PRD section 13.
 - Each result lists every factor with points, the recorded value used and a basis sentence. The same text appears in the UI.
 - Tested in `PriorityServiceTests` (boundaries, missing data, windows, directions, determinism, Pre-Risk independence).
 
@@ -81,8 +82,9 @@ Form numbers are text so bad input can be reported by field. Empty means not rec
 ## D-14 Release: self-contained folder, not single file
 Self-contained `win-x64` removes the need to install .NET. Single-file is supported by the script (`-SingleFile`, with
 `IncludeNativeLibrariesForSelfExtract`) because `e_sqlite3.dll` is a native library, but it is **not the default**: it self-extracts native files at
-first run and has not been tested on Windows. PRD section 14 says the option is fixed only after a package is tested on Windows; until then the plain folder is the documented path.
-A cross-publish from macOS succeeds and contains `e_sqlite3.dll`; it has not been run on Windows.
+first run and has not been tested on Windows. The folder release is the documented and verified path.
+On 21 October 2026 the folder package passed startup, normal exit and restart on Windows x64 with an isolated SQLite database; its process loaded the bundled `coreclr.dll`.
+`scripts/publish.ps1` includes the user guide and produces a ZIP. `scripts/verify-release.ps1` checks folder builds only. Testing on a second PC without .NET remains a manual check.
 
 ## D-15 Origin column
 `Incidents` and `ActionItems` carry `Origin` (`Source`/`User`) so recorded case data and user entries are never confused. Editing a source row keeps `Source`.

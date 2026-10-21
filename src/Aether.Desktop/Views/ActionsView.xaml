@@ -42,10 +42,10 @@
                 <DataGrid ItemsSource="{Binding Items}" SelectedItem="{Binding Selected, Mode=TwoWay}" AutomationProperties.Name="Action table">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Action" Width="*" MinWidth="200" Binding="{Binding Description}" ElementStyle="{StaticResource CellText}" />
-                        <DataGridTextColumn Header="Incident tag" Width="100" Binding="{Binding IncidentTag}" />
-                        <DataGridTextColumn Header="Owner" Width="90" Binding="{Binding Owner}" />
-                        <DataGridTextColumn Header="Target date" Width="100" Binding="{Binding TargetDate, StringFormat=yyyy-MM-dd, TargetNullValue=—}" />
-                        <DataGridTextColumn Header="Status" Width="100" Binding="{Binding Status}" />
+                        <DataGridTextColumn Header="Incident tag" Width="100" MinWidth="100" Binding="{Binding IncidentTag}" />
+                        <DataGridTextColumn Header="Owner" Width="90" MinWidth="90" Binding="{Binding Owner}" />
+                        <DataGridTextColumn Header="Target date" Width="100" MinWidth="100" Binding="{Binding TargetDate, StringFormat=yyyy-MM-dd, TargetNullValue=—}" />
+                        <DataGridTextColumn Header="Status" Width="100" MinWidth="100" Binding="{Binding Status}" />
                     </DataGrid.Columns>
                 </DataGrid>
                 <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1"

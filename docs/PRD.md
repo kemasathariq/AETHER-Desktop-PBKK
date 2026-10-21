@@ -242,20 +242,20 @@ didokumentasikan dan diuji; README dan naskah demo tersedia; build dan paket ril
 
 ## 17. Pemetaan ke implementasi (tambahan, bukan bagian PRD asli)
 
-Status ini menggambarkan kondisi kode saat ini. "Teruji otomatis" berarti ada tes yang dijalankan dan lulus di macOS; "Perlu uji Windows" berarti belum pernah dijalankan di Windows.
+Status diperbarui 21 Oktober 2026. Pengujian otomatis dijalankan di Windows x64, termasuk rendering WPF dan alur form dengan database sementara. Pemeriksaan interaksi fisik dan komputer Windows kedua dicatat terpisah di `TESTING.md`.
 
 | Persyaratan | Lokasi implementasi | Status |
 |---|---|---|
-| FR-01, FR-06, US-01 | `DashboardViewModel`, `SqliteDashboardRepository`, `Controls/*Chart` | Query teruji otomatis; tampilan perlu uji Windows |
-| FR-02 | `IncidentsViewModel`, `SqliteIncidentRepository.Search` | Query teruji otomatis; tampilan perlu uji Windows |
-| FR-03, FR-04, FR-05, US-02 | `IncidentsViewModel`, `IncidentValidator`, repository | Repository dan validasi teruji otomatis; dialog dan form perlu uji Windows |
-| FR-07 | `AssetsViewModel`, `SqliteAssetRepository` | Query teruji otomatis; tampilan perlu uji Windows |
-| FR-08, US-03, bagian 13 | `PriorityService`, `PriorityViewModel` | Aturan teruji otomatis; tampilan perlu uji Windows |
-| FR-09, FR-10, US-04 | `ActionsViewModel`, `ActionValidator`, `SqliteActionRepository` | Repository dan validasi teruji otomatis; tampilan perlu uji Windows |
+| FR-01, FR-06, US-01 | `DashboardViewModel`, `SqliteDashboardRepository`, `Controls/*Chart` | Query, perubahan statistik, dan rendering WPF teruji |
+| FR-02 | `IncidentsViewModel`, `SqliteIncidentRepository.Search` | Query, filter, pesan hasil kosong, dan rendering teruji |
+| FR-03, FR-04, FR-05, US-02 | `IncidentsViewModel`, `IncidentValidator`, repository | Form tambah/ubah, validasi, dan penghapusan repository teruji; dialog konfirmasi perlu uji interaksi manual |
+| FR-07 | `AssetsViewModel`, `SqliteAssetRepository` | Lima aset, seluruh parameter, unit, tanggal, batas, dan rendering teruji |
+| FR-08, US-03, bagian 13 | `PriorityService`, `PriorityViewModel` | Aturan, data tanpa unit, alasan, dan rendering teruji |
+| FR-09, FR-10, US-04 | `ActionsViewModel`, `ActionValidator`, `SqliteActionRepository` | Form, status, relasi, penghapusan repository, dan rendering teruji |
 | FR-11 | seluruh repository | Teruji otomatis (restart database) |
-| FR-12, FR-13, FR-14 | validator, `PageViewModel.TryRun`, pesan status dan keadaan kosong | Validasi teruji otomatis; pesan di UI perlu uji Windows |
+| FR-12, FR-13, FR-14 | validator, `PageViewModel.TryRun`, pesan status dan keadaan kosong | Validasi dan pesan form, pencarian kosong, serta view model tanpa data teruji |
 | NFR-03 | semua SQL berparameter | Teruji otomatis (uji input berisi tanda kutip) |
 | NFR-06 | skema `AetherDatabase` | Teruji otomatis |
-| NFR-09 | label "(source)" dan "(calculated)", kolom `Origin` | Perlu pemeriksaan visual di Windows |
+| NFR-09 | label "(source)" dan "(calculated)", kolom `Origin` | Label diperiksa pada hasil rendering WPF |
 
 Rincian per kriteria penerimaan AC-01 sampai AC-12: `TESTING.md`.

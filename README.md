@@ -24,7 +24,8 @@ results produced by this app. Details of the rule and decisions: `docs/DECISIONS
 |---|---|
 | Run or build the app | Windows 10/11 x64, **.NET SDK 8.0 or newer** (`dotnet --list-sdks`), Git. Visual Studio 2022 ".NET desktop development" is optional. |
 | Run the published release | Windows 10/11 x64 only (the release is self-contained) |
-| Build and run tests only | Any OS with the .NET SDK 8+ (macOS/Linux can compile the WPF project but not run it) |
+| Run all tests | Windows with .NET SDK 8+; WPF acceptance tests require a Windows desktop session |
+| Core / Infrastructure tests | Any OS with .NET SDK 8+ (macOS/Linux can compile WPF but cannot run its tests) |
 
 No SQL Server or other database server is needed. Packages are restored from nuget.org.
 
@@ -40,8 +41,9 @@ src/
 tests/
   Aether.Core.Tests/           validation and prioritization tests
   Aether.Infrastructure.Tests/ database, import and repository tests
+  Aether.Desktop.Tests/        Windows WPF rendering, form and persistence acceptance tests
 docs/                          PRD, architecture, design, data dictionary, database, testing, decisions, demo, team tasks, contributing
-scripts/                       build.ps1, publish.ps1, reset-database.ps1, check.sh, extract_seed.py
+scripts/                       build.ps1, publish.ps1, verify-release.ps1, reset-database.ps1, check.sh, extract_seed.py
 references/                    original PRD, case data, labs, deck (read-only input)
 ```
 
@@ -51,7 +53,7 @@ From the repository root, in PowerShell or a terminal:
 
 ```
 dotnet restore Aether.sln
-dotnet build Aether.sln -c Release
+dotnet build Aether.sln -c Release -m:1
 dotnet run --project src/Aether.Desktop -c Release
 ```
 
@@ -60,10 +62,10 @@ In Visual Studio open `Aether.sln`, set `Aether.Desktop` as the startup project 
 ## 5. Run the tests
 
 ```
-dotnet test Aether.sln -c Release
+dotnet test Aether.sln -c Release -m:1
 ```
 
-or `scripts\build.ps1` (restore + build + test, Windows) / `scripts/check.sh` (macOS/Linux). 79 tests: 51 in `Aether.Core.Tests`, 28 in `Aether.Infrastructure.Tests`.
+or `scripts\build.ps1` (restore + build + test, Windows) / `scripts/check.sh` (macOS/Linux, Core and Infrastructure tests). 85 tests on Windows: 54 Core, 28 Infrastructure, 3 Desktop acceptance tests.
 Persistence tests use temporary database files. Details and the manual Windows checklist: `docs/TESTING.md`.
 
 ## 6. Database
@@ -86,14 +88,17 @@ which runs:
 dotnet publish src/Aether.Desktop/Aether.Desktop.csproj -c Release -r win-x64 --self-contained true -o artifacts/AetherDesktop-win-x64
 ```
 
-Zip `artifacts\AetherDesktop-win-x64` and share it. The folder contains `AetherDesktop.exe` and needs no .NET runtime or database server (about 160 MB). The release was **not yet run on Windows**; see
-`docs/TESTING.md` AC-12 and `docs/DECISIONS.md` D-14 (single-file is available with `-SingleFile` but is untested and not the default).
+The script creates `artifacts\AetherDesktop-win-x64.zip` with the executable, dependencies, and an Indonesian user guide (`PANDUAN.txt`). Extract the whole ZIP and open `AetherDesktop.exe`; keep the supporting files beside it. The package needs no .NET installation or database server.
+
+Run `scripts\verify-release.ps1` to check startup, normal exit, restart, database creation, and use of the bundled runtime with a separate test database. This passed on Windows x64 on 21 October 2026. The release has not been checked on a second clean PC; single-file publishing (`-SingleFile`) remains optional and unverified.
+
+User instructions: [Panduan penggunaan](docs/PANDUAN.md). Detailed evidence and remaining manual checks: [Testing](docs/TESTING.md).
 
 ## 8. Environment limitations and troubleshooting
 
 | Problem | What to do |
 |---|---|
-| Developed on macOS: the WPF app could not be launched | Build and tests ran there; every Windows-only check is listed in `docs/TESTING.md`. |
+| WPF tests do not run on macOS/Linux | Use `scripts/check.sh` for Core/Infrastructure; run the full suite in a Windows desktop session. |
 | `dotnet build` on Linux/macOS fails on the Desktop project | The repo sets `EnableWindowsTargeting`; use SDK 8 or newer and run `dotnet restore` first. |
 | "The database could not be opened" at start | Check you can write to `%LOCALAPPDATA%\AetherDesktop`; or set `AETHER_DB_PATH` to a writable path. A message tells which file was used. |
 | Data looks wrong or you want the original data | Run `scripts\reset-database.ps1` (backs up the old file). |
@@ -117,10 +122,10 @@ how to change a shared contract).
 | Area | Status |
 |---|---|
 | Dashboard, Incidents, Asset Monitoring, Incident Priority, Action Tracker | Implemented. |
-| SQLite schema, import, repositories, validation, prioritization | Implemented; 79 automated tests pass (macOS, .NET SDK 10.0.401). |
-| Windows build and run of the WPF app | **Not done yet.** XAML compiles on macOS; the app has never been started. Expect small binding/layout fixes. |
-| Windows release verification (AC-12) | **Not done yet.** A win-x64 self-contained publish succeeds from macOS and includes `e_sqlite3.dll`. |
-| Windows acceptance checklist (AC-01 to AC-12) | Only AC-10 (tests) has been run. See `docs/TESTING.md`. |
+| SQLite schema, import, repositories, validation, prioritization | Implemented; Core/Infrastructure tests pass on Windows. |
+| Windows WPF checks | 85 tests pass in total. Actual views rendered at 1360x820 and 1100x680; forms, filtering, dashboard refresh and persistence checked. |
+| Windows release verification (AC-12) | Self-contained EXE starts, creates SQLite database, closes normally and restarts using its bundled runtime. |
+| Windows acceptance checklist (AC-01 to AC-12) | Automated checks recorded in `docs/TESTING.md`; physical keyboard/mouse, DPI scaling, confirmation dialogs, and a second clean PC still need manual acceptance. |
 | Hourly production readings (case data) | Deliberately not included (`docs/DECISIONS.md` D-09). |
 | Teammate branches | None existed in the repository; nothing was merged. See `docs/TEAM_TASKS.md`. |
 

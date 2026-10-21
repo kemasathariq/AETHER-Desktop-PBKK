@@ -10,15 +10,26 @@ param([switch]$SingleFile)
 $ErrorActionPreference = 'Stop'
 Set-Location (Join-Path $PSScriptRoot '..')
 
-$out = 'artifacts\AetherDesktop-win-x64'
-if (Test-Path $out) { Remove-Item $out -Recurse -Force }
+$artifacts = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\artifacts'))
+$out = Join-Path $artifacts 'AetherDesktop-win-x64'
+if (-not $out.StartsWith($artifacts + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
+    throw 'Publish output must be inside the artifacts folder.'
+}
+if (Test-Path -LiteralPath $out) { Remove-Item -LiteralPath $out -Recurse -Force }
 
 $args = @('publish', 'src\Aether.Desktop\Aether.Desktop.csproj', '-c', 'Release', '-r', 'win-x64',
-          '--self-contained', 'true', '-o', $out)
+          '--self-contained', 'true', '-o', $out, '-m:1')
 if ($SingleFile) {
     $args += @('-p:PublishSingleFile=true', '-p:IncludeNativeLibrariesForSelfExtract=true')
 }
 dotnet @args
 if ($LASTEXITCODE -ne 0) { throw 'publish failed' }
+Copy-Item -LiteralPath 'docs\PANDUAN.md' -Destination (Join-Path $out 'PANDUAN.txt')
+Compress-Archive -Path (Join-Path $out '*') -DestinationPath "$out.zip" -Force
 Write-Host "Published to $out" -ForegroundColor Green
-Write-Host "Run $out\AetherDesktop.exe on a clean Windows 10/11 x64 machine to verify the release."
+Write-Host "ZIP: $out.zip"
+if ($SingleFile) {
+    Write-Host 'Single-file builds require a separate manual Windows check; verify-release.ps1 checks folder builds only.'
+} else {
+    Write-Host 'Run scripts\verify-release.ps1 to check startup and restart with an isolated database.'
+}

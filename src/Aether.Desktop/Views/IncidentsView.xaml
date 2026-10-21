@@ -52,14 +52,14 @@
                 <DataGrid ItemsSource="{Binding Items}" SelectedItem="{Binding Selected, Mode=TwoWay}"
                           AutomationProperties.Name="Incident table">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Date" Width="95" Binding="{Binding OccurredOn, StringFormat=yyyy-MM-dd, TargetNullValue=—}" />
-                        <DataGridTextColumn Header="Tag" Width="95" Binding="{Binding TagNumber}" ElementStyle="{StaticResource CellText}" />
+                        <DataGridTextColumn Header="Date" Width="95" MinWidth="95" Binding="{Binding OccurredOn, StringFormat=yyyy-MM-dd, TargetNullValue=—}" />
+                        <DataGridTextColumn Header="Tag" Width="95" MinWidth="95" Binding="{Binding TagNumber}" ElementStyle="{StaticResource CellText}" />
                         <DataGridTextColumn Header="Title" Width="*" MinWidth="180" Binding="{Binding Title}" ElementStyle="{StaticResource CellText}" />
-                        <DataGridTextColumn Header="Plant" Width="65" Binding="{Binding Plant}" />
-                        <DataGridTextColumn Header="Status" Width="150" Binding="{Binding Status}" ElementStyle="{StaticResource CellText}" />
-                        <DataGridTextColumn Header="Downtime (h)" Width="105" Binding="{Binding DowntimeHours, StringFormat=N1, TargetNullValue=—}" ElementStyle="{StaticResource CellNumber}" />
-                        <DataGridTextColumn Header="Actual loss (k USD)" Width="135" Binding="{Binding ActualLossKUsd, StringFormat=N0, TargetNullValue=—}" ElementStyle="{StaticResource CellNumber}" />
-                        <DataGridTextColumn Header="Pre-Risk (source)" Width="115" Binding="{Binding PreRisk, TargetNullValue=—}" />
+                        <DataGridTextColumn Header="Plant" Width="65" MinWidth="65" Binding="{Binding Plant}" />
+                        <DataGridTextColumn Header="Status" Width="150" MinWidth="150" Binding="{Binding Status}" ElementStyle="{StaticResource CellText}" />
+                        <DataGridTextColumn Header="Downtime (h)" Width="105" MinWidth="105" Binding="{Binding DowntimeHours, StringFormat=N1, TargetNullValue=—}" ElementStyle="{StaticResource CellNumber}" />
+                        <DataGridTextColumn Header="Actual loss (k USD)" Width="135" MinWidth="135" Binding="{Binding ActualLossKUsd, StringFormat=N0, TargetNullValue=—}" ElementStyle="{StaticResource CellNumber}" />
+                        <DataGridTextColumn Header="Pre-Risk (source)" Width="115" MinWidth="115" Binding="{Binding PreRisk, TargetNullValue=—}" />
                     </DataGrid.Columns>
                 </DataGrid>
                 <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1"

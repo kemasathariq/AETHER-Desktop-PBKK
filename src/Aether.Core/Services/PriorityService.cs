@@ -133,11 +133,13 @@ public static class PriorityService
             return new(name, FactorState.NotAvailable, 0, ConditionMax,
                 $"No measurement was recorded in the {ConditionWindowDays} days up to the incident date.");
 
-        var withLimits = window.Where(r => r.LimitDirection is "high" or "low"
+        var withLimits = window.Where(r => !string.IsNullOrWhiteSpace(r.Parameter)
+                                           && !string.IsNullOrWhiteSpace(r.Unit)
+                                           && r.LimitDirection is "high" or "low"
                                            && (r.AlarmLimit is not null || r.TripLimit is not null)).ToList();
         if (withLimits.Count == 0)
             return new(name, FactorState.NotAvailable, 0, ConditionMax,
-                "Measurements exist but no alarm or trip limit is recorded, so they cannot be compared.");
+                "Measurements exist but the parameter, unit, direction or alarm/trip limit is missing, so they cannot be compared.");
 
         var trips = withLimits.Where(r => Breaches(r, r.TripLimit)).Select(Describe).Distinct().ToList();
         if (trips.Count > 0)

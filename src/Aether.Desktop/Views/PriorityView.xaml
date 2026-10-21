@@ -45,7 +45,7 @@
                 <DataGrid ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected, Mode=TwoWay}"
                           AutomationProperties.Name="Incidents ranked by calculated priority">
                     <DataGrid.Columns>
-                        <DataGridTemplateColumn Header="Priority (calculated)" Width="140" SortMemberPath="Result.Points">
+                        <DataGridTemplateColumn Header="Priority (calculated)" Width="140" MinWidth="140" SortMemberPath="Result.Points">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Style="{StaticResource Badge}" Background="{Binding Category, Converter={StaticResource BadgeBrush}}">
@@ -54,12 +54,12 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="Points" Width="70" Binding="{Binding PointsText}" />
-                        <DataGridTextColumn Header="Date" Width="95" Binding="{Binding Incident.OccurredOn, StringFormat=yyyy-MM-dd, TargetNullValue=—}" />
-                        <DataGridTextColumn Header="Tag" Width="95" Binding="{Binding Incident.TagNumber}" ElementStyle="{StaticResource CellText}" />
+                        <DataGridTextColumn Header="Points" Width="70" MinWidth="70" Binding="{Binding PointsText}" />
+                        <DataGridTextColumn Header="Date" Width="95" MinWidth="95" Binding="{Binding Incident.OccurredOn, StringFormat=yyyy-MM-dd, TargetNullValue=—}" />
+                        <DataGridTextColumn Header="Tag" Width="95" MinWidth="95" Binding="{Binding Incident.TagNumber}" ElementStyle="{StaticResource CellText}" />
                         <DataGridTextColumn Header="Title" Width="*" MinWidth="160" Binding="{Binding Incident.Title}" ElementStyle="{StaticResource CellText}" />
-                        <DataGridTextColumn Header="Pre-Risk (source)" Width="115" Binding="{Binding Incident.PreRisk, TargetNullValue=—}" />
-                        <DataGridTextColumn Header="Data" Width="100" Binding="{Binding PartialText}" />
+                        <DataGridTextColumn Header="Pre-Risk (source)" Width="115" MinWidth="115" Binding="{Binding Incident.PreRisk, TargetNullValue=—}" />
+                        <DataGridTextColumn Header="Data" Width="100" MinWidth="100" Binding="{Binding PartialText}" />
                     </DataGrid.Columns>
                 </DataGrid>
                 <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1"
