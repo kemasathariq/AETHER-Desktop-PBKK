@@ -89,13 +89,13 @@
                         <DataGrid ItemsSource="{Binding Recent}" AutomationProperties.Name="Most recent incidents"
                                   MaxHeight="300">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Date" Width="100" Binding="{Binding OccurredOn, StringFormat=yyyy-MM-dd, TargetNullValue=—}" />
-                                <DataGridTextColumn Header="Tag" Width="100" Binding="{Binding TagNumber}" ElementStyle="{StaticResource CellText}" />
+                                <DataGridTextColumn Header="Date" Width="100" MinWidth="100" Binding="{Binding OccurredOn, StringFormat=yyyy-MM-dd, TargetNullValue=—}" />
+                                <DataGridTextColumn Header="Tag" Width="100" MinWidth="100" Binding="{Binding TagNumber}" ElementStyle="{StaticResource CellText}" />
                                 <DataGridTextColumn Header="Title" Width="*" Binding="{Binding Title}" ElementStyle="{StaticResource CellText}" />
-                                <DataGridTextColumn Header="Plant" Width="70" Binding="{Binding Plant}" />
-                                <DataGridTextColumn Header="Status" Width="170" Binding="{Binding Status}" />
-                                <DataGridTextColumn Header="Downtime (h)" Width="110" Binding="{Binding DowntimeHours, StringFormat=N1, TargetNullValue=—}" ElementStyle="{StaticResource CellNumber}" />
-                                <DataGridTextColumn Header="Actual loss (k USD)" Width="140" Binding="{Binding ActualLossKUsd, StringFormat=N0, TargetNullValue=—}" ElementStyle="{StaticResource CellNumber}" />
+                                <DataGridTextColumn Header="Plant" Width="70" MinWidth="70" Binding="{Binding Plant}" />
+                                <DataGridTextColumn Header="Status" Width="170" MinWidth="170" Binding="{Binding Status}" />
+                                <DataGridTextColumn Header="Downtime (h)" Width="110" MinWidth="110" Binding="{Binding DowntimeHours, StringFormat=N1, TargetNullValue=—}" ElementStyle="{StaticResource CellNumber}" />
+                                <DataGridTextColumn Header="Actual loss (k USD)" Width="140" MinWidth="140" Binding="{Binding ActualLossKUsd, StringFormat=N0, TargetNullValue=—}" ElementStyle="{StaticResource CellNumber}" />
                             </DataGrid.Columns>
                         </DataGrid>
                     </StackPanel>

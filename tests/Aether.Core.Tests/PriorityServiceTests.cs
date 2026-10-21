@@ -124,6 +124,19 @@ public class PriorityServiceTests
         Assert.Equal(FactorState.NotAvailable, f.State);
     }
 
+    [Theory]
+    [InlineData(null, "Vibration")]
+    [InlineData("", "Vibration")]
+    [InlineData("micron", "")]
+    public void RecordsWithoutUnitOrParameter_CannotBeCompared(string? unit, string parameter)
+    {
+        var record = Rec("2026-04-22", 90, 45, 75);
+        record.Unit = unit;
+        record.Parameter = parameter;
+        var factor = PriorityService.Evaluate(Make(0, 0), new[] { record }).Factors[2];
+        Assert.Equal(FactorState.NotAvailable, factor.State);
+    }
+
     [Fact]
     public void SameInput_GivesSameResult()
     {

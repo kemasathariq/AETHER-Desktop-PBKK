@@ -5,10 +5,10 @@
 $ErrorActionPreference = 'Stop'
 Set-Location (Join-Path $PSScriptRoot '..')
 
-dotnet restore Aether.sln
+dotnet restore Aether.sln -m:1
 if ($LASTEXITCODE -ne 0) { throw 'restore failed' }
-dotnet build Aether.sln -c Release --no-restore
+dotnet build Aether.sln -c Release --no-restore -m:1
 if ($LASTEXITCODE -ne 0) { throw 'build failed' }
-dotnet test Aether.sln -c Release --no-build
+dotnet test Aether.sln -c Release --no-build -m:1
 if ($LASTEXITCODE -ne 0) { throw 'tests failed' }
 Write-Host 'Restore, build and tests succeeded.' -ForegroundColor Green

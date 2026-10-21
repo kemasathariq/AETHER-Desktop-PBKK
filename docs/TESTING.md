@@ -1,52 +1,55 @@
-# Testing
+﻿# Testing
 
-## Automated tests
+## Verified on Windows
 
+21 October 2026: Windows x64 (OS build 26200), .NET SDK 10.0.402, target/runtime .NET 8. All 85 tests passed with no skipped tests. Restore completed with NuGet audit enabled. No database server is needed.
+
+```powershell
+.\scripts\build.ps1
+# or
+dotnet test Aether.sln -c Release -m:1
 ```
-dotnet test Aether.sln -c Release          # all tests
-dotnet test tests/Aether.Core.Tests
-dotnet test tests/Aether.Infrastructure.Tests
+
+| Project | Tests | Coverage |
+|---|---:|---|
+| Aether.Core.Tests | 54 | Required fields, negative/nonfinite numbers, null versus zero, number parsing, derived loss, action statuses, priority boundaries, missing data, condition windows and limit directions, unknown units/parameters, Pre-Risk independence |
+| Aether.Infrastructure.Tests | 28 | Schema and constraints, import counts/totals and repeat startup, incident/action CRUD, persistence on reopening, search and combined filters, SQL injection text, cascade delete, measurements and units, dashboard queries and empty data |
+| Aether.Desktop.Tests | 3 | Selection notification, saving under active filters, and a Windows acceptance scenario using actual WPF views, commands, validators, and SQLite repositories |
+
+The WPF acceptance scenario checks all five pages at 1360x820 and 1100x680, reports binding errors, preserves declared table column widths, creates/edits incidents and actions, rejects blank/invalid/negative input, accepts decimal commas, checks filtering, dashboard refresh, persistence after reopening, all five assets and their parameters, KO-3201 priority factors, and empty view models. It executes commands and bindings in process; it does not inject physical mouse or keyboard input.
+
+Screenshots are written to `tests/Aether.Desktop.Tests/bin/Release/net8.0-windows/Screenshots/`. Dashboard, incident list/details, actions/form, asset information/chart, and priority/details were visually inspected, including the minimum layouts. Wide tables use horizontal scrolling. Temporary database files isolate these checks from the user's database.
+
+On macOS/Linux, run `scripts/check.sh`: it compiles the solution and runs only Core and Infrastructure tests. WPF acceptance tests need a Windows desktop session.
+
+## Published release check
+
+```powershell
+.\scripts\publish.ps1
+.\scripts\verify-release.ps1
 ```
 
-| Project | Tests | Covers |
-|---|---|---|
-| `Aether.Core.Tests` (51) | `ValidationTests`, `PriorityServiceTests` | required fields, negative/NaN/infinite numbers, null = not recorded, derived total loss, action validation and statuses, number parsing (`12.5`, `12,5`, rejects `1,584.5`, `NaN`), priority points and category boundaries, missing downtime/loss, "not rated", Pre-Risk has no effect, condition window and limit directions, determinism |
-| `Aether.Infrastructure.Tests` (28) | `DatabaseAndSeedTests`, `RepositoryTests` | folder/file/table creation and repeat init, foreign keys enforced, import counts (380/5/520/20) and totals, import run twice, deleted rows stay deleted after restart, duplicate MTO number, malformed import data, persistence after reopening the file, incident and action CRUD, validation before save, not-found errors, SQL injection text stored as text, search/filter (case-insensitive, `%` literal, combined filters), action filters and relations, cascade delete of only that incident's actions, asset records with units/limits, empty database for assets and dashboard, dashboard sums/missing counts/follow-the-data/distributions/recent list, priority of the seeded KO-3201 incident from stored condition records |
+The default self-contained Windows x64 folder release passed both launches on this Windows machine. The check verifies a main window, a nonempty SQLite file, normal exit, restart, and that the process loads `coreclr.dll` from the release folder. It uses a unique database under the temporary directory and retains it for inspection. It checks the presence of WPF and native SQLite dependencies.
 
-Persistence tests use one temporary SQLite file each and delete it afterwards; they never touch `%LOCALAPPDATA%`.
+`publish.ps1` also creates `artifacts/AetherDesktop-win-x64.zip`, including the Indonesian user guide. Extract the entire ZIP before opening `AetherDesktop.exe`. The verifier applies to folder releases. Optional `-SingleFile` publishing remains untested.
 
-Last run (macOS arm64, .NET SDK 10.0.401, tests rolled forward to the .NET 10 runtime): Core 51 passed, Infrastructure 28 passed, 0 failed, 0 skipped.
-Run `scripts/check.sh` (macOS/Linux) or `scripts\build.ps1` (Windows) to repeat.
+## Acceptance evidence and remaining manual checks
 
-### Not covered by automated tests
+Automated evidence below is from the Windows run. The last column describes additional manual acceptance; it is not a claim those interactions have been performed.
 
-The WPF layer (view models, XAML, charts, dialogs) has no automated tests: the project targets Windows and cannot run on the development Mac. Logic that decides results lives in Core and
-Infrastructure on purpose so that it is tested. The Windows checks below cover the rest.
-
-## Windows acceptance checklist (to run by hand)
-
-Run on Windows 10/11 x64 with a fresh database (`scripts\reset-database.ps1`). Record Pass/Fail and the date next to each line.
-Status column: **Automated** = the data behaviour behind it is covered by a passing test; **Windows** = needs the checks in the last column.
-
-| ID | Criterion | Status today | Windows check |
+| ID | Criterion | Automated evidence | Additional manual check |
 |---|---|---|---|
-| AC-01 | All pages open | Windows | Click each sidebar item; each page loads without an error dialog. Use arrow keys in the sidebar too. |
-| AC-02 | Statistics and charts follow the database | Automated (aggregates) + Windows | Dashboard shows 380 incidents, 2,261.1 h, k USD 61,886 actual loss on first start. Add an incident with 10 h and k USD 100 actual loss, return to Dashboard: 381, 2,271.1 h, k USD 61,986. Delete it: back to the first numbers. |
-| AC-03 | Incident CRUD | Automated (repository) + Windows | New incident with required fields -> appears in the table; Edit -> change saved; Delete -> confirmation, row gone. |
-| AC-04 | Search and filter | Automated (queries) + Windows | Search `KO-3201` finds 1 row; `zzzz` shows "No incidents match..."; status and plant filters narrow the list; Clear filters restores it. |
-| AC-05 | Asset page shows only available data | Automated + Windows | Exactly 5 assets listed, 26 weekly values per parameter, units and dates shown, no value for any other tag. Banner states coverage. The empty-assets message cannot be reached with the seeded database; it is only covered at repository level (empty database returns no assets). |
-| AC-06 | Priority has inspectable reasons | Automated (rule) + Windows | Open Incident Priority, select KO-3201 (29 Apr 2026): Critical, factors downtime 3/3, loss 3/3, condition 2/2 (trip). Add an incident and leave Downtime empty (the source data has a downtime value on every incident): the downtime factor shows "Not scored" and the result is flagged "Partial data". |
-| AC-07 | Actions managed and linked | Automated + Windows | Action Tracker shows 20 imported actions; KO-3201 has 4 (1 Closed, 1 In Progress, 2 Open). Add, edit status, delete an action. Delete an incident that has actions: dialog names the count, actions go with it. |
-| AC-08 | Data survives restart | Automated (reopen file) + Windows | Add an incident and an action, close the app, reopen: both present, imported data not duplicated (still 380 + yours). |
-| AC-09 | Invalid input rejected | Automated (validators) + Windows | Save empty form: red messages under required fields, nothing saved. Type `abc` or `-5` in Downtime: error. |
-| AC-10 | Tests run | **Passed on macOS** | `dotnet test Aether.sln`; repeat on Windows. |
-| AC-11 | README explains run/build | Windows | A teammate follows README on a clean Windows machine. |
-| AC-12 | Release runs without a database server | Windows | `scripts\publish.ps1`, copy `artifacts\AetherDesktop-win-x64` to a machine without .NET or SQL Server, run `AetherDesktop.exe`, confirm the database appears under `%LOCALAPPDATA%\AetherDesktop` and the dashboard loads. |
+| AC-01 | All pages open | All actual page templates render without binding errors at normal/minimum sizes | Click every sidebar item; navigate with arrow keys |
+| AC-02 | Statistics/charts follow data | Repository aggregates; dashboard starts at 380 incidents; form save increases count to 381 and actions to 21 | Check charts after adding/deleting a record |
+| AC-03 | Incident CRUD | Form commands create/edit; repository tests cover delete/cascade; selection panel regression checked | Click Delete and check both Cancel and confirmation |
+| AC-04 | Search/filter | Query combinations; WPF search with no match and clear filters | Enter KO-3201 and combine plant/status controls |
+| AC-05 | Only available asset data | Five assets, 26 weekly records per parameter, units/limits, and rendered charts | Scroll measurements and change parameters with keyboard |
+| AC-06 | Explainable priority | Boundaries/missing values; KO-3201 Critical with factors displayed; no unit/parameter means not scored | Expand rules and inspect partial-data examples |
+| AC-07 | Linked action CRUD | Form commands create/edit status; repository relation/delete/cascade tests | Exercise delete confirmation and incident dropdown |
+| AC-08 | Persistence | Reopened SQLite retains incident/action changes; release starts twice with same test file | Close/reopen after making changes through controls |
+| AC-09 | Invalid input rejected | Empty forms, abc, negative downtime, parser, repository validation | Type invalid dates into DatePicker |
+| AC-10 | Tests run | 85 passed on Windows x64 | Follow README on a teammate's machine |
+| AC-11 | Run/build instructions | Build, publish and verifier executed; Indonesian guide included | A teammate follows the guide independently |
+| AC-12 | Standalone release | EXE starts/restarts with bundled .NET and local SQLite | Repeat on second Windows PC without .NET |
 
-Other Windows-only things to look at: sidebar icons render (Segoe MDL2 glyphs), amber focus ring on buttons/list/table with Tab, window at 1100x680 shows no clipped controls,
-DatePicker works with keyboard, the three charts draw and the line chart marks alarm/trip lines, text contrast looks right on a laptop display and at 125%/150% scaling.
-
-## Known gaps
-
-- No test ever launched the WPF application. XAML compiles (BAML generation succeeded on macOS) but runtime binding errors would only appear on Windows (check the Visual Studio Output window for `System.Windows.Data Error`).
-- Windows release not run on Windows (see AC-12).
+Still unverified: physical keyboard/mouse workflows, delete confirmation interactions, invalid DatePicker text, focus visibility on a real display, 125%/150% DPI scaling, Windows 10, a second clean PC, and optional single-file publishing. Computer Use could not inspect the launched window in this session (minimized-window/activation errors), so no manual interaction is recorded as passed.
